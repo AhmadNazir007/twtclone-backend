@@ -8,8 +8,11 @@ import {
   
   @WebSocketGateway({
     cors: {
-      origin: '*', // Allow frontend origin here
+      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      methods: ['GET', 'POST'],
+      credentials: true,
     },
+    transports: ['websocket', 'polling'],
   })
   export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
