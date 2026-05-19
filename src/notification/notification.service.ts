@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { NotificationsGateway } from './notification.gateway';
 
@@ -6,11 +5,11 @@ import { NotificationsGateway } from './notification.gateway';
 export class NotificationsService {
   constructor(private gateway: NotificationsGateway) {}
 
-    async notifyAll(message: string) {
+  notifyAll(message: string) {
     this.gateway.sendNotification(message);
   }
 
-    async notifyPost(userId: string) {
+  notifyPost(userId: string) {
     const message = `User ${userId} created a post`;
     this.gateway.sendNotificationToAll(message);
   }

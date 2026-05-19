@@ -8,34 +8,43 @@ import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, validate: (config: Record<string, unknown>) => {
-      if (!config.JWT_SECRET) {
-        throw new Error('JWT_SECRET is required in environment variables');
-      }
-      return config; // No type assertion needed
-    },}),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: (config: Record<string, unknown>) => {
+        if (!config.JWT_SECRET) {
+          throw new Error('JWT_SECRET is required in environment variables');
+        }
+        return config;
+      },
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('DB_HOST'),
-        port: +configService.get('DB_PORT'),
+        port: Number(configService.get('DB_PORT')),
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // Disable in production,
-        migrations: ["src/migrations/*.ts"],
-        ssl: {
-          rejectUnauthorized: false, // accept self-signed certificates
-        }
+        synchronize:
+          configService.get('TYPEORM_SYNC') === undefined
+            ? configService.get('NODE_ENV') !== 'production'
+            : configService.get('TYPEORM_SYNC') === 'true',
+        ssl:
+          configService.get('DB_SSL') === 'true'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
       inject: [ConfigService],
     }),
     AuthModule,
     UsersModule,
     PostsModule,
-    CategoryModule
+    CategoryModule,
   ],
 })
 export class AppModule {}
+
+
+

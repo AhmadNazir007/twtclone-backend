@@ -12,16 +12,19 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
+  name?: string;
+
+  @Column({ select: false })
   password: string;
 
-  @OneToMany(() => Post, post => post.author)
+  @OneToMany(() => Post, (post) => post.author)
   posts: Post[];
 
-  @OneToMany(() => Comment, comment => comment.author)
+  @OneToMany(() => Comment, (comment) => comment.author)
   comments: Comment[];
 
-  @OneToMany(() => Like, like => like.user)
+  @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
 
   @Column({ nullable: true })
@@ -30,7 +33,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: Role,
-    default: Role.User, // Default role is 'user'
+    default: Role.User,
   })
   role: Role;
 }

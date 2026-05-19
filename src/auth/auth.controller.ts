@@ -2,7 +2,8 @@ import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req } from '@n
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RequestWithUser } from 'src/types/request-with-user';
 
 @Controller('auth')
 export class AuthController {
@@ -20,8 +21,8 @@ export class AuthController {
   }
 
   @Post('logout')
-  @UseGuards(AuthGuard('jwt'))
-  async logout(@Req() req: any) {
+  @UseGuards(JwtAuthGuard)
+  async logout(@Req() req: RequestWithUser) {
     return this.authService.logout(req.user.id);
   }
 }

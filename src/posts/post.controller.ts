@@ -7,7 +7,7 @@ import {
   Put,
   Delete,
   UseGuards,
-  Req
+  Req,
 } from '@nestjs/common';
 import { PostsService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -40,14 +40,18 @@ export class PostsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(id, updatePostDto);
+  update(
+    @Param('id') id: string,
+    @Body() updatePostDto: UpdatePostDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.postsService.update(id, updatePostDto, req.user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(id);
+  remove(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.postsService.remove(id, req.user);
   }
 
   @Post(':id/comments')
@@ -62,20 +66,7 @@ export class PostsController {
 
   @Post(':id/like')
   @UseGuards(JwtAuthGuard)
-  async likePost(
-    @Param('id') postId: string,
-    @Req() req: RequestWithUser,
-  ) {
+  async likePost(@Param('id') postId: string, @Req() req: RequestWithUser) {
     return this.postsService.toggleLike(postId, req.user.id);
   }
-
-  
-
-  // @Get()
-  // async findAll() {
-  //   return this.postsRepository.find({
-  //     relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author'],
-  //     order: { createdAt: 'DESC' },
-  //   });
-  // }
 }

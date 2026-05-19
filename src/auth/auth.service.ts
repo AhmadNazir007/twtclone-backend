@@ -7,7 +7,6 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { NotificationsService } from 'src/notification/notification.service';
 
-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -18,53 +17,51 @@ export class AuthService {
     private notificationsService: NotificationsService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<Omit<User, 'password'> | null> {
+  async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersService.findOneByEmail(email);
-    
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password: _, ...result } = user;
-      return result;
-    }
-    return null;
-}
 
-  async login(loginDto: LoginDto): Promise<{ access_token: string, user: any }> {
+    if (user && (await bcrypt.compare(password, user.password))) {
+      return user;
+    }
+
+    return null;
+  }
+
+  async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    
-    const payload: { email: string; sub: number, roles:string } = { 
-      email: user.email, 
+
+    const payload = {
+      email: user.email,
       sub: user.id,
-      roles: user.role
+      roles: user.role,
     };
-    
+
     return {
       access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
+      user: this.usersService.toPublicUser(user),
     };
   }
 
   async register(registerDto: RegisterDto) {
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    await this.notificationsService.notifyAll('New user registered!');
-    return this.usersService.create({
+    const user = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
     });
+    this.notificationsService.notifyAll('New user registered!');
+    return user;
   }
 
-  async logout(userId: string) {
+  async logout(userId: number) {
     try {
       await this.usersService.updateLastLogout(userId);
       return { message: 'Logged out successfully' };
-    } catch (error) {
-      this.logger.error(`Logout failed for user ${userId}`, error.stack);
+    } catch (error: unknown) {
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error('Logout failed for user ' + userId, stack);
       throw new Error('Logout processing failed');
     }
   }
