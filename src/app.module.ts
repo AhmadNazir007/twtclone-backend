@@ -22,23 +22,33 @@ import { NotificationsModule } from './notification/notification.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: Number(configService.get('DB_PORT')),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize:
-          configService.get('TYPEORM_SYNC') === undefined
-            ? configService.get('NODE_ENV') !== 'production'
-            : configService.get('TYPEORM_SYNC') === 'true',
-        ssl:
-          configService.get('DB_SSL') === 'true'
-            ? { rejectUnauthorized: false }
-            : false,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const useUrl = !!configService.get('DATABASE_URL');
+        const sslEnabled = configService.get('DB_SSL') === 'true';
+
+        const base: any = {
+          type: 'postgres',
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize:
+            configService.get('TYPEORM_SYNC') === undefined
+              ? configService.get('NODE_ENV') !== 'production'
+              : configService.get('TYPEORM_SYNC') === 'true',
+          ssl: sslEnabled ? { rejectUnauthorized: false } : false,
+          extra: sslEnabled ? { ssl: { rejectUnauthorized: false } } : undefined,
+        };
+
+        if (useUrl) {
+          base.url = String(configService.get('DATABASE_URL'));
+        } else {
+          base.host = String(configService.get('DB_HOST'));
+          base.port = Number(configService.get('DB_PORT')) || 5432;
+          base.username = String(configService.get('DB_USERNAME'));
+          base.password = String(configService.get('DB_PASSWORD'));
+          base.database = String(configService.get('DB_NAME'));
+        }
+
+        return base as any;
+      },
       inject: [ConfigService],
     }),
     AuthModule,
