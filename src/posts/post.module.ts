@@ -6,8 +6,8 @@ import { Post } from './entities/post.entity';
 import { AuthModule } from '../auth/auth.module';
 import { Comment } from './entities/comment.entity';
 import { Like } from './entities/like.entity';
-import { User } from 'src/users/entities/user.entity';
-import { NotificationsModule } from 'src/notification/notification.module';
+import { User } from '../users/entities/user.entity';
+import { NotificationsModule } from '../notification/notification.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Post, Comment, Like, User ]), AuthModule, NotificationsModule],

@@ -12,11 +12,11 @@ import {
 import { PostsService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/common/decorators/curent-user.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/curent-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { RequestWithUser } from 'src/types/request-with-user';
+import { RequestWithUser } from '../types/request-with-user';
 
 @Controller('posts')
 export class PostsController {

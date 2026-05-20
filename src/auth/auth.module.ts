@@ -6,7 +6,7 @@ import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './stratgies/jwt.strategy';
-import { NotificationsModule } from 'src/notification/notification.module';
+import { NotificationsModule } from '../notification/notification.module';
 
 @Module({
   imports: [

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Role } from 'src/auth/enum/roles.enum';
+import { Role } from '../auth/enum/roles.enum';
 
 export type PublicUser = Omit<User, 'password'> & { username: string };
 

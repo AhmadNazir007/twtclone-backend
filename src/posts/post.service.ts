@@ -8,9 +8,9 @@ import { User } from '../users/entities/user.entity';
 import { Comment } from './entities/comment.entity';
 import { Like } from './entities/like.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { NotificationsService } from 'src/notification/notification.service';
-import { Role } from 'src/auth/enum/roles.enum';
-import { RequestWithUser } from 'src/types/request-with-user';
+import { NotificationsService } from '../notification/notification.service';
+import { Role } from '../auth/enum/roles.enum';
+import { RequestWithUser } from '../types/request-with-user';
 
 @Injectable()
 export class PostsService {
