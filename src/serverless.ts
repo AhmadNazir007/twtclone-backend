@@ -2,13 +2,19 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
-const serverless = require('serverless-http');
+import serverless from 'serverless-http';
+
 import { AppModule } from './app.module';
 
 const expressApp = express();
-let cachedHandler: any;
+
+let cachedServer: any;
 
 async function bootstrapServer() {
+  if (cachedServer) {
+    return cachedServer;
+  }
+
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressApp),
@@ -23,18 +29,19 @@ async function bootstrapServer() {
   );
 
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   await app.init();
-  cachedHandler = serverless(expressApp);
+
+  cachedServer = serverless(expressApp);
+
+  return cachedServer;
 }
 
-module.exports = async (req: any, res: any) => {
-  if (!cachedHandler) {
-    await bootstrapServer();
-  }
-  return cachedHandler(req, res);
-};
+export default async function handler(req: any, res: any) {
+  const server = await bootstrapServer();
+  return server(req, res);
+}
