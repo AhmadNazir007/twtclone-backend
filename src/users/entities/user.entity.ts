@@ -3,6 +3,7 @@ import { Post } from '../../posts/entities/post.entity';
 import { Comment } from '../../posts/entities/comment.entity';
 import { Like } from '../../posts/entities/like.entity';
 import { Role } from '../../auth/enum/roles.enum';
+import { Follow } from './follow.entity';
 
 @Entity()
 export class User {
@@ -36,4 +37,16 @@ export class User {
     default: Role.User,
   })
   role: Role;
+
+  @OneToMany(() => Follow, (follow) => follow.following)
+  followers: Follow[];
+
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  following: Follow[];
+
+  @Column({ default: 0 })
+  followersCount: number;
+
+  @Column({ default: 0 })
+  followingCount: number;
 }

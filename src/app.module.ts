@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm/dist/interfaces/typeorm-options.interface';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/post.module';
 import { CategoryModule } from './category/category.module';
 import { NotificationsModule } from './notification/notification.module';
+import { PostsModule } from './posts/post.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -22,32 +23,37 @@ import { NotificationsModule } from './notification/notification.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
-        const useUrl = !!configService.get('DATABASE_URL');
-        const sslEnabled = configService.get('DB_SSL') === 'true';
+      useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const sslEnabled = configService.get<string>('DB_SSL') === 'true';
+        const synchronize =
+          configService.get<string>('TYPEORM_SYNC') === undefined
+            ? configService.get<string>('NODE_ENV') !== 'production'
+            : configService.get<string>('TYPEORM_SYNC') === 'true';
 
-        const base: any = {
-          type: 'postgres',
+        const common = {
+          type: 'postgres' as const,
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize:
-            configService.get('TYPEORM_SYNC') === undefined
-              ? configService.get('NODE_ENV') !== 'production'
-              : configService.get('TYPEORM_SYNC') === 'true',
+          synchronize,
           ssl: sslEnabled ? { rejectUnauthorized: false } : false,
           extra: sslEnabled ? { ssl: { rejectUnauthorized: false } } : undefined,
         };
 
-        if (useUrl) {
-          base.url = String(configService.get('DATABASE_URL'));
-        } else {
-          base.host = String(configService.get('DB_HOST'));
-          base.port = Number(configService.get('DB_PORT')) || 5432;
-          base.username = String(configService.get('DB_USERNAME'));
-          base.password = String(configService.get('DB_PASSWORD'));
-          base.database = String(configService.get('DB_NAME'));
+        if (databaseUrl) {
+          return {
+            ...common,
+            url: databaseUrl,
+          };
         }
 
-        return base as any;
+        return {
+          ...common,
+          host: configService.get<string>('DB_HOST'),
+          port: Number(configService.get<string>('DB_PORT')) || 5432,
+          username: configService.get<string>('DB_USERNAME'),
+          password: configService.get<string>('DB_PASSWORD'),
+          database: configService.get<string>('DB_NAME'),
+        };
       },
       inject: [ConfigService],
     }),
@@ -61,6 +67,3 @@ import { NotificationsModule } from './notification/notification.module';
   providers: [AppService],
 })
 export class AppModule {}
-
-
-

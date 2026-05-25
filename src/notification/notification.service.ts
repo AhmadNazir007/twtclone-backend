@@ -13,14 +13,14 @@ export class NotificationsService {
 
   constructor(@Optional() private readonly gateway?: NotificationsGateway) {}
 
-  async notifyAll(message: string) {
+  notifyAll(message: string) {
     this.storeMessage(message);
     if (this.gateway) {
       this.gateway.sendNotification(message);
     }
   }
 
-  async notifyPost(userId: string) {
+  notifyPost(userId: string) {
     const message = `User ${userId} created a post`;
     this.storeMessage(message);
     if (this.gateway) {

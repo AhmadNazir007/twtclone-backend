@@ -51,7 +51,7 @@ export class AuthService {
       ...registerDto,
       password: hashedPassword,
     });
-    this.notificationsService.notifyAll('New user registered!');
+    void this.notificationsService.notifyAll('New user registered!');
     return user;
   }
 
