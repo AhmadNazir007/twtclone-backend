@@ -13,21 +13,13 @@ async function bootstrap() {
     }),
   );
 
-  const allowedOrigins = (
-    process.env.FRONTEND_URL || 'http://localhost:3000'
-  )
+  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
 
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error(`CORS blocked: ${origin}`));
-    },
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });

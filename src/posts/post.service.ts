@@ -31,7 +31,7 @@ export class PostsService {
       ...createPostDto,
       author,
     });
-    this.notificationsService.notifyPost(author.email);
+    void this.notificationsService.notifyPost(author.email);
     return this.postsRepository.save(post);
   }
 
