@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'ty
 import { User } from '../../users/entities/user.entity';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
+import { Category } from '../../category/entities/category.entity';
 
 @Entity()
 export class Post {
@@ -28,6 +29,9 @@ export class Post {
 
   @Column({ default: 0 })
   commentsCount: number;
+
+  @ManyToOne(() => Category, (category) => category.posts, { nullable: true, onDelete: 'SET NULL' })
+  category?: Category | null;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

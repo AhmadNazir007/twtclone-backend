@@ -11,6 +11,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { NotificationsService } from '../notification/notification.service';
 import { Role } from '../auth/enum/roles.enum';
 import { RequestWithUser } from '../types/request-with-user';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class PostsService {
@@ -23,21 +24,40 @@ export class PostsService {
     private likesRepository: Repository<Like>,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
     private notificationsService: NotificationsService,
   ) {}
 
   async create(createPostDto: CreatePostDto, author: User): Promise<Post> {
+    const { categoryId, ...postData } = createPostDto;
+
+    let category: Category | null = null;
+    if (categoryId) {
+      category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+      if (!category) {
+        throw new NotFoundException('Category not found');
+      }
+    }
+
     const post = this.postsRepository.create({
-      ...createPostDto,
+      ...postData,
       author,
+      category,
     });
     void this.notificationsService.notifyPost(author.email);
     return this.postsRepository.save(post);
   }
 
-  async findAll(): Promise<Post[]> {
+  async findAll(categoryId?: string): Promise<Post[]> {
+    const where: any = {};
+    if (categoryId) {
+      where.category = { id: categoryId };
+    }
+
     return this.postsRepository.find({
-      relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author'],
+      where,
+      relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author', 'category'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -45,7 +65,7 @@ export class PostsService {
   async findOne(id: string): Promise<Post> {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author'],
+      relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author', 'category'],
     });
 
     if (!post) {
@@ -63,7 +83,22 @@ export class PostsService {
     const post = await this.findOne(id);
     this.assertCanModifyPost(post, user);
 
-    await this.postsRepository.update(id, updatePostDto);
+    const { categoryId, ...updateData } = updatePostDto;
+
+    if (categoryId !== undefined) {
+      if (categoryId === null || categoryId === '') {
+        post.category = null;
+      } else {
+        const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+        if (!category) {
+          throw new NotFoundException('Category not found');
+        }
+        post.category = category;
+      }
+    }
+
+    Object.assign(post, updateData);
+    await this.postsRepository.save(post);
     return this.findOne(id);
   }
 
