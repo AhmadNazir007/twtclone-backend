@@ -19,9 +19,22 @@ async function bootstrap() {
     .filter(Boolean);
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const isAllowedOrigin = allowedOrigins.includes(origin);
+      const isLocalDevOrigin =
+        process.env.NODE_ENV !== 'production' &&
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+      callback(null, isAllowedOrigin || isLocalDevOrigin);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   const port = Number(process.env.PORT) || 4000;
@@ -32,3 +45,5 @@ async function bootstrap() {
 }
 
 void bootstrap();
+
+

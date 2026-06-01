@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RequestWithUser } from '../types/request-with-user';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -23,6 +24,18 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   getSuggestions(@Req() req: RequestWithUser) {
     return this.usersService.getFollowSuggestions(req.user.id);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getMe(@Req() req: RequestWithUser) {
+    return this.usersService.findPublicOne(req.user.id);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  updateMe(@Req() req: RequestWithUser, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.usersService.updateProfile(req.user.id, updateProfileDto);
   }
 
 
@@ -59,3 +72,4 @@ export class UsersController {
     return this.usersService.isFollowing(req.user.id, Number(followingId));
   }
 }
+

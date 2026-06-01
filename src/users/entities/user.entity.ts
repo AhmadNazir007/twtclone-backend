@@ -1,4 +1,4 @@
-import { Entity, OneToMany, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, OneToMany, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 import { Post } from '../../posts/entities/post.entity';
 import { Comment } from '../../posts/entities/comment.entity';
 import { Like } from '../../posts/entities/like.entity';
@@ -15,6 +15,18 @@ export class User {
 
   @Column({ nullable: true })
   name?: string;
+
+  @Column({ type: 'text', nullable: true })
+  bio?: string;
+
+  @Column({ nullable: true })
+  location?: string;
+
+  @Column({ nullable: true })
+  avatarUrl?: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
 
   @Column({ select: false })
   password: string;
@@ -50,3 +62,4 @@ export class User {
   @Column({ default: 0 })
   followingCount: number;
 }
+

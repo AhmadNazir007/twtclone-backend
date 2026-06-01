@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Follow } from './entities/follow.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Role } from '../auth/enum/roles.enum';
 
 export type PublicUser = Omit<User, 'password'> & { username: string };
@@ -78,6 +79,23 @@ export class UsersService {
 
   async updateLastLogout(userId: number): Promise<void> {
     await this.usersRepository.update({ id: userId }, { lastLogout: new Date() });
+  }
+
+  async updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<PublicUser> {
+    const user = await this.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    Object.assign(user, {
+      name: updateProfileDto.name?.trim() || user.name,
+      bio: updateProfileDto.bio?.trim() || null,
+      location: updateProfileDto.location?.trim() || null,
+      avatarUrl: updateProfileDto.avatarUrl?.trim() || null,
+    });
+
+    const savedUser = await this.usersRepository.save(user);
+    return this.toPublicUser(savedUser);
   }
 
   async followUser(followerId: number, followingId: number) {
@@ -177,4 +195,5 @@ export class UsersService {
 
 }
  
+
 
