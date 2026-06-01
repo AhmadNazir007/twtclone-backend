@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RequestWithUser } from '../types/request-with-user';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -40,36 +40,37 @@ export class UsersController {
 
 
   @Get(':id')
-  getOne(@Param('id') userId: string) {
-    return this.usersService.findPublicOne(Number(userId));
+  getOne(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.findPublicOne(userId);
   }
 
   @Post(':id/follow')
   @UseGuards(JwtAuthGuard)
-  followUser(@Param('id') followingId: string, @Req() req: RequestWithUser) {
-    return this.usersService.followUser(req.user.id, Number(followingId));
+  followUser(@Param('id', ParseIntPipe) followingId: number, @Req() req: RequestWithUser) {
+    return this.usersService.followUser(req.user.id, followingId);
   }
 
   @Post(':id/unfollow')
   @UseGuards(JwtAuthGuard)
-  unfollowUser(@Param('id') followingId: string, @Req() req: RequestWithUser) {
-    return this.usersService.unfollowUser(req.user.id, Number(followingId));
+  unfollowUser(@Param('id', ParseIntPipe) followingId: number, @Req() req: RequestWithUser) {
+    return this.usersService.unfollowUser(req.user.id, followingId);
   }
 
   @Get(':id/followers')
-  getFollowers(@Param('id') userId: string) {
-    return this.usersService.getFollowers(Number(userId));
+  getFollowers(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.getFollowers(userId);
   }
 
   @Get(':id/following')
-  getFollowing(@Param('id') userId: string) {
-    return this.usersService.getFollowing(Number(userId));
+  getFollowing(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.getFollowing(userId);
   }
 
   @Get(':id/is-following')
   @UseGuards(JwtAuthGuard)
-  isFollowing(@Param('id') followingId: string, @Req() req: RequestWithUser) {
-    return this.usersService.isFollowing(req.user.id, Number(followingId));
+  isFollowing(@Param('id', ParseIntPipe) followingId: number, @Req() req: RequestWithUser) {
+    return this.usersService.isFollowing(req.user.id, followingId);
   }
 }
+
 
