@@ -34,6 +34,21 @@ export class PostsController {
     return this.postsService.findAll(categoryId);
   }
 
+  @Get('user/:userId')
+  findByUser(@Param('userId') userId: string) {
+    return this.postsService.findByAuthor(Number(userId));
+  }
+
+  @Get('user/:userId/replies')
+  findRepliesByUser(@Param('userId') userId: string) {
+    return this.postsService.findRepliesByAuthor(Number(userId));
+  }
+
+  @Get('user/:userId/likes')
+  findLikedPostsByUser(@Param('userId') userId: string) {
+    return this.postsService.findLikedPostsByUser(Number(userId));
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postsService.findOne(id);

@@ -39,6 +39,26 @@ export class UsersController {
   }
 
 
+  @Get(':id/posts')
+  getUserPosts(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.getUserPosts(userId);
+  }
+
+  @Get(':id/replies')
+  getUserReplies(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.getUserReplies(userId);
+  }
+
+  @Get(':id/media')
+  getUserMedia(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.getUserMediaPosts(userId);
+  }
+
+  @Get(':id/likes')
+  getUserLikes(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.getUserLikedPosts(userId);
+  }
+
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) userId: number) {
     return this.usersService.findPublicOne(userId);
@@ -72,5 +92,6 @@ export class UsersController {
     return this.usersService.isFollowing(req.user.id, followingId);
   }
 }
+
 
 

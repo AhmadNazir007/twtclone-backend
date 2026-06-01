@@ -15,6 +15,9 @@ export class Post {
   @Column('text')
   content: string;
 
+  @Column({ type: 'text', nullable: true })
+  mediaUrl?: string | null;
+
   @ManyToOne(() => User, user => user.posts)
   author: User;
 
@@ -36,3 +39,4 @@ export class Post {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }
+

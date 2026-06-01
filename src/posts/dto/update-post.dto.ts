@@ -12,4 +12,8 @@ export class UpdatePostDto {
   @IsString()
   @IsOptional()
   categoryId?: string;
+
+  @IsString()
+  @IsOptional()
+  mediaUrl?: string;
 }

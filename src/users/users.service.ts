@@ -1,11 +1,14 @@
 import { ConflictException, Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Follow } from './entities/follow.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Role } from '../auth/enum/roles.enum';
+import { Post } from '../posts/entities/post.entity';
+import { Comment } from '../posts/entities/comment.entity';
+import { Like } from '../posts/entities/like.entity';
 
 export type PublicUser = Omit<User, 'password'> & { username: string };
 
@@ -16,6 +19,12 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Follow)
     private followsRepository: Repository<Follow>,
+    @InjectRepository(Post)
+    private postsRepository: Repository<Post>,
+    @InjectRepository(Comment)
+    private commentsRepository: Repository<Comment>,
+    @InjectRepository(Like)
+    private likesRepository: Repository<Like>,
   ) {}
 
   toPublicUser(user: User): PublicUser {
@@ -96,6 +105,55 @@ export class UsersService {
 
     const savedUser = await this.usersRepository.save(user);
     return this.toPublicUser(savedUser);
+  }
+  async getUserPosts(userId: number): Promise<Post[]> {
+    await this.findPublicOne(userId);
+
+    return this.postsRepository.find({
+      where: { author: { id: userId } },
+      relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author', 'category'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getUserMediaPosts(userId: number): Promise<Post[]> {
+    await this.findPublicOne(userId);
+
+    return this.postsRepository.find({
+      where: { author: { id: userId }, mediaUrl: Not(IsNull()) },
+      relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author', 'category'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getUserReplies(userId: number): Promise<Comment[]> {
+    await this.findPublicOne(userId);
+
+    return this.commentsRepository.find({
+      where: { author: { id: userId } },
+      relations: ['author', 'post', 'post.author', 'post.category'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getUserLikedPosts(userId: number): Promise<Post[]> {
+    await this.findPublicOne(userId);
+
+    const likes = await this.likesRepository.find({
+      where: { user: { id: userId } },
+      relations: [
+        'post',
+        'post.author',
+        'post.likes',
+        'post.likes.user',
+        'post.comments',
+        'post.comments.author',
+        'post.category',
+      ],
+      order: { createdAt: 'DESC' },
+    });
+
+    return likes.map((like) => like.post).filter(Boolean);
   }
 
   async followUser(followerId: number, followingId: number) {
@@ -195,5 +253,6 @@ export class UsersService {
 
 }
  
+
 
 

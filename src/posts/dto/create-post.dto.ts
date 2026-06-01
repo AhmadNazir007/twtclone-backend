@@ -12,4 +12,8 @@ export class CreatePostDto {
   @IsString()
   @IsOptional()
   categoryId?: string;
+
+  @IsString()
+  @IsOptional()
+  mediaUrl?: string;
 }

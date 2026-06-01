@@ -30,7 +30,7 @@ export class PostsService {
   ) {}
 
   async create(createPostDto: CreatePostDto, author: User): Promise<Post> {
-    const { categoryId, ...postData } = createPostDto;
+    const { categoryId, mediaUrl, ...postData } = createPostDto;
 
     let category: Category | null = null;
     if (categoryId) {
@@ -42,6 +42,7 @@ export class PostsService {
 
     const post = this.postsRepository.create({
       ...postData,
+      mediaUrl: mediaUrl?.trim() || null,
       author,
       category,
     });
@@ -60,6 +61,32 @@ export class PostsService {
       relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author', 'category'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async findByAuthor(userId: number): Promise<Post[]> {
+    return this.postsRepository.find({
+      where: { author: { id: userId } },
+      relations: ['author', 'likes', 'likes.user', 'comments', 'comments.author', 'category'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findRepliesByAuthor(userId: number): Promise<Comment[]> {
+    return this.commentsRepository.find({
+      where: { author: { id: userId } },
+      relations: ['author', 'post', 'post.author', 'post.category'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findLikedPostsByUser(userId: number): Promise<Post[]> {
+    const likes = await this.likesRepository.find({
+      where: { user: { id: userId } },
+      relations: ['post', 'post.author', 'post.likes', 'post.likes.user', 'post.comments', 'post.comments.author', 'post.category'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return likes.map((like) => like.post).filter(Boolean);
   }
 
   async findOne(id: string): Promise<Post> {
@@ -83,7 +110,7 @@ export class PostsService {
     const post = await this.findOne(id);
     this.assertCanModifyPost(post, user);
 
-    const { categoryId, ...updateData } = updatePostDto;
+    const { categoryId, mediaUrl, ...updateData } = updatePostDto;
 
     if (categoryId !== undefined) {
       if (categoryId === null || categoryId === '') {
@@ -98,6 +125,9 @@ export class PostsService {
     }
 
     Object.assign(post, updateData);
+    if (mediaUrl !== undefined) {
+      post.mediaUrl = mediaUrl.trim() || null;
+    }
     await this.postsRepository.save(post);
     return this.findOne(id);
   }
@@ -184,3 +214,4 @@ export class PostsService {
     }
   }
 }
+
