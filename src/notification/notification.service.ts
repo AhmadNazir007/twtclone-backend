@@ -28,6 +28,22 @@ export class NotificationsService {
     }
   }
 
+  notifyComment(userLabel: string, postTitle: string) {
+    const message = `${userLabel} commented on "${postTitle}"`;
+    this.storeMessage(message);
+    if (this.gateway) {
+      this.gateway.sendNotificationToAll(message);
+    }
+  }
+
+  notifyLike(userLabel: string, postTitle: string) {
+    const message = `${userLabel} liked "${postTitle}"`;
+    this.storeMessage(message);
+    if (this.gateway) {
+      this.gateway.sendNotificationToAll(message);
+    }
+  }
+
   getMessages(): NotificationMessage[] {
     return [...this.messages];
   }

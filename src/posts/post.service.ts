@@ -145,7 +145,7 @@ export class PostsService {
     userId: number,
     createCommentDto: CreateCommentDto,
   ) {
-    await this.ensurePostExists(postId);
+    const post = await this.ensurePostExists(postId);
 
     const comment = this.commentsRepository.create({
       content: createCommentDto.content,
@@ -156,10 +156,15 @@ export class PostsService {
     await this.commentsRepository.save(comment);
     await this.postsRepository.increment({ id: postId }, 'commentsCount', 1);
 
-    return this.commentsRepository.findOne({
+    const savedComment = await this.commentsRepository.findOne({
       where: { id: comment.id },
       relations: ['author', 'post'],
     });
+
+    const userLabel = savedComment?.author?.name || savedComment?.author?.email || `User ${userId}`;
+    this.notificationsService.notifyComment(userLabel, post.title);
+
+    return savedComment;
   }
 
   async toggleLike(postId: string, userId: number) {
@@ -190,6 +195,7 @@ export class PostsService {
 
     await this.likesRepository.save(like);
     await this.postsRepository.increment({ id: postId }, 'likesCount', 1);
+    this.notificationsService.notifyLike(user.name || user.email, post.title);
     return { liked: true };
   }
 
