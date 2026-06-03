@@ -9,6 +9,7 @@ import { CategoryModule } from './category/category.module';
 import { NotificationsModule } from './notification/notification.module';
 import { PostsModule } from './posts/post.module';
 import { UsersModule } from './users/users.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { UsersModule } from './users/users.module';
     PostsModule,
     CategoryModule,
     NotificationsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
